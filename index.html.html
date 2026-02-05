@@ -1,0 +1,3263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STEM Curriculum Navigator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
+
+    :root {
+      --electronics: #3b82f6;
+      --electronics-dark: #2563eb;
+      --cad: #8b5cf6;
+      --cad-dark: #7c3aed;
+      --robotics: #f59e0b;
+      --robotics-dark: #d97706;
+      --mechanical: #ef4444;
+      --mechanical-dark: #dc2626;
+      --ai: #ec4899;
+      --ai-dark: #db2777;
+      --web: #06b6d4;
+      --web-dark: #0891b2;
+      --game: #f97316;
+      --game-dark: #ea580c;
+      --appdev: #10b981;
+      --appdev-dark: #059669;
+      --hardware: #8b5cf6;
+      --hardware-dark: #7c3aed;
+      --arch: #f59e0b;
+      --arch-dark: #d97706;
+      --data: #ec4899;
+      --data-dark: #db2777;
+      --practical: #3b82f6;
+      --practical-dark: #2563eb;
+
+      --bg-start: #1e1b4b;
+      --bg-end: #312e81;
+      --card-bg: #1e1b33;
+      --card-border: #2e2b4a;
+      --text-primary: #eee;
+      --text-secondary: #9794b8;
+      --text-muted: #605d7a;
+      --locked-bg: #2a2744;
+      --locked-border: #3b3860;
+      --locked-text: #605d7a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(145deg, var(--bg-start), var(--bg-end));
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 24px 18px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .header .subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* ─── Legend ─── */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .legend-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 2px solid transparent;
+    }
+
+    .legend-box.earned {
+      background: #10b981;
+      border-color: #059669;
+    }
+
+    .legend-box.available {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .legend-box.current {
+      background: #f59e0b;
+      border-color: #d97706;
+      box-shadow: 0 0 7px rgba(245, 158, 11, 0.45);
+    }
+
+    .legend-box.locked {
+      background: var(--locked-bg);
+      border-color: var(--locked-border);
+    }
+
+    /* ─── Progress Overview ─── */
+    .progress-overview {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    /* ─── Grid wrapper ─── */
+    .grid-wrapper {
+      display: flex;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      margin-bottom: 24px;
+    }
+
+    /* Sticky left labels */
+    .row-labels {
+      flex-shrink: 0;
+      width: 170px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(0, 0, 0, 0.2);
+      border-right: 1px solid var(--card-border);
+      z-index: 2;
+    }
+
+    .row-labels .corner-cell {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--card-border);
+      flex-shrink: 0;
+    }
+
+    .row-label-item {
+      height: 88px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 9px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+    }
+
+    .row-label-item:last-child {
+      border-bottom: none;
+    }
+
+    .row-label-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .row-label-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-label-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Scrollable area */
+    .scroll-area {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scroll-area::-webkit-scrollbar {
+      height: 5px;
+    }
+
+    .scroll-area::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    .scroll-inner {
+      display: flex;
+      flex-direction: column;
+      min-width: max-content;
+    }
+
+    /* Tier header row */
+    .tier-header-row {
+      display: flex;
+      height: 48px;
+      border-bottom: 1px solid var(--card-border);
+      flex-shrink: 0;
+    }
+
+    .tier-header-cell {
+      width: 195px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tier-header-cell:last-child {
+      border-right: none;
+    }
+
+    .tier-header-cell .tier-h-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tier-header-cell .tier-h-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Field row */
+    .field-row {
+      display: flex;
+      height: 88px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+    }
+
+    .field-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Tier cell */
+    .tier-cell {
+      width: 195px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 8px;
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .tier-cell:last-child {
+      border-right: none;
+    }
+
+    .tier-cell:hover {
+      background: rgba(255, 255, 255, 0.07);
+      transform: scale(1.03);
+      z-index: 1;
+    }
+
+    .tier-cell .tc-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .tier-cell .tc-progress {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .tier-cell .tc-lock {
+      position: absolute;
+      top: 4px;
+      right: 5px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    /* Status colours */
+    .tier-cell.status-locked {
+      background: rgba(40, 38, 68, 0.5);
+      cursor: not-allowed;
+    }
+
+    .tier-cell.status-locked:hover {
+      transform: none;
+      background: rgba(40, 38, 68, 0.5);
+    }
+
+    .tier-cell.status-locked .tc-name {
+      color: var(--locked-text);
+    }
+
+    .tier-cell.status-locked .tc-progress {
+      color: var(--locked-text);
+    }
+
+    .tier-cell.status-available {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tier-cell.status-in-progress {
+      background: rgba(16, 185, 129, 0.1);
+      border-left: 3px solid #10b981;
+    }
+
+    .tier-cell.status-complete {
+      background: rgba(16, 185, 129, 0.18);
+      border-left: 3px solid #10b981;
+    }
+
+    .tier-cell.status-complete .tc-name {
+      color: #6ee7b7;
+    }
+
+    /* Field accent left-border per field */
+    .tier-cell.cad-design {
+      border-left: 3px solid var(--cad);
+    }
+
+    .tier-cell.electronic-cad {
+      border-left: 3px solid var(--electronics);
+    }
+
+    .tier-cell.web-development {
+      border-left: 3px solid var(--web);
+    }
+
+    .tier-cell.app-development {
+      border-left: 3px solid var(--appdev);
+    }
+
+    .tier-cell.hardware-programming {
+      border-left: 3px solid var(--hardware);
+    }
+
+    .tier-cell.architectural-cad {
+      border-left: 3px solid var(--arch);
+    }
+
+    .tier-cell.data-intelligence {
+      border-left: 3px solid var(--data);
+    }
+
+    .tier-cell.practical-electronics {
+      border-left: 3px solid var(--practical);
+    }
+
+    .tier-cell.ai-data-science {
+      border-left: 3px solid var(--ai);
+    }
+
+    .tier-cell.game-development {
+      border-left: 3px solid var(--game);
+    }
+
+    .tier-cell.robotics {
+      border-left: 3px solid var(--robotics);
+    }
+
+    /* Override status-in/complete border when locked */
+    .tier-cell.status-locked {
+      border-left: none !important;
+    }
+
+    /* ─── Section Panels ─── */
+    .section-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .section-panel h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    /* ─── Learning Journey ─── */
+    .path-timeline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-height: 50px;
+    }
+
+    .path-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 11px;
+      border-radius: 9px;
+      border: 2px solid;
+      position: relative;
+      color: #fff;
+      min-width: 90px;
+      max-width: 130px;
+    }
+
+    .path-badge-number {
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      border-radius: 50%;
+      width: 19px;
+      height: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .path-badge-field {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.75;
+    }
+
+    .path-badge-name {
+      font-size: 10px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .path-arrow {
+      color: var(--text-muted);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .empty-path {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 13px;
+      padding: 12px 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* ─── Metrics ─── */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .metric-card {
+      border-radius: 11px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 2px solid;
+      color: #fff;
+    }
+
+    .metric-card h3 {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .metric-label {
+      font-size: 9px;
+      opacity: 0.65;
+      margin-top: 2px;
+    }
+
+    .diversity-score {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: #667eea;
+    }
+
+    /* ─── Overall Progress Bar ─── */
+    .overall-progress {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 11px;
+      border: 1px solid var(--card-border);
+    }
+
+    .overall-progress h3 {
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+
+    .overall-progress .stats-text {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      transition: width 0.5s cubic-bezier(.4, 0, .2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 11px;
+      min-width: 32px;
+    }
+
+    /* ─── Career Paths ─── */
+    .career-paths-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .career-path-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--card-border);
+      transition: all 0.25s ease;
+    }
+
+    .career-path-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .career-path-card.completed {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .career-path-card.in-progress {
+      border-color: var(--robotics);
+    }
+
+    .cp-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 6px;
+    }
+
+    .cp-icon {
+      font-size: 22px;
+    }
+
+    .cp-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .cp-desc {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .cp-progress-bar {
+      width: 100%;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 7px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .cp-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--electronics), var(--electronics-dark));
+      transition: width 0.45s cubic-bezier(.4, 0, .2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 9px;
+      min-width: 24px;
+    }
+
+    .career-path-card.completed .cp-progress-fill {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .cp-badges-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .cp-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .cp-chip.earned {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: #10b981;
+      color: #6ee7b7;
+    }
+
+    .cp-chip.not-earned {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--card-border);
+      color: var(--text-muted);
+    }
+
+    .cp-next {
+      margin-top: 8px;
+      padding: 6px 9px;
+      border-radius: 7px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      font-size: 10px;
+      color: #fcd34d;
+      font-weight: 600;
+    }
+
+    .cp-next span {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .completion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border-radius: 14px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 7px;
+    }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -560px;
+      width: 560px;
+      height: 100vh;
+      background: #1e1b33;
+      border-left: 1px solid var(--card-border);
+      box-shadow: -6px 0 24px rgba(0, 0, 0, 0.4);
+      transition: right 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar.active {
+      right: 0;
+    }
+
+    .sidebar-header {
+      position: sticky;
+      top: 0;
+      padding: 20px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      border-bottom: 1px solid var(--card-border);
+      background: var(--card-bg);
+    }
+
+    .sidebar-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 22px;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+
+    .sidebar-content {
+      padding: 20px;
+    }
+
+    /* Badge cards in sidebar */
+    .badge-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 11px;
+      padding: 16px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .badge-card.earned {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .badge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .badge-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge-status {
+      font-size: 20px;
+    }
+
+    .badge-progress-mini {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sub-badges {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .sub-badge-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      margin: 4px 0;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 7px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .sub-badge-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sub-badge-item.earned {
+      background: rgba(16, 185, 129, 0.12);
+      color: #6ee7b7;
+    }
+
+    .sub-badge-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--card-border);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+
+    .sub-badge-checkbox.checked {
+      background: #10b981;
+      border-color: #10b981;
+      color: #fff;
+    }
+
+    /* Progress ring in badge card */
+    .badge-ring-wrap {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 38px;
+    }
+
+    .badge-ring-wrap svg {
+      width: 38px;
+      height: 38px;
+    }
+
+    .badge-ring-wrap .ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ─── Overlay ─── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 999;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ─── Tooltip ─── */
+    .tooltip {
+      position: fixed;
+      background: rgba(15, 14, 30, 0.95);
+      color: #eee;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      z-index: 2000;
+      pointer-events: none;
+      white-space: nowrap;
+      display: none;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ─── Modal ─── */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e1b33;
+      border: 1px solid var(--card-border);
+      padding: 24px;
+      border-radius: 14px;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      animation: modalIn 0.2s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    @keyframes modalIn {
+      from {
+        transform: translateY(10px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .modal-icon {
+      font-size: 24px;
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-body {
+      color: var(--text-secondary);
+      line-height: 1.55;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .missing-prereqs {
+      background: rgba(245, 158, 11, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 3px solid var(--robotics);
+      margin: 12px 0;
+    }
+
+    .missing-prereqs-title {
+      font-weight: 700;
+      color: #fcd34d;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .missing-prereqs-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .missing-prereqs-list li {
+      padding: 3px 0;
+      color: #fbbf24;
+      font-size: 12px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      border: 1px solid var(--card-border);
+      padding: 7px 16px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .btn-override {
+      background: var(--robotics);
+      color: #fff;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 7px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .btn-override:hover {
+      background: var(--robotics-dark);
+    }
+
+    /* ─── Dependency Editor ─── */
+    .editor-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control-group label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .control-group select {
+      padding: 8px 11px;
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .control-group select:focus {
+      border-color: var(--electronics);
+    }
+
+    .control-group select option {
+      background: #1e1b33;
+      color: #eee;
+    }
+
+    .enforcement-mode {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      height: 36px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .radio-option input[type="radio"] {
+      accent-color: var(--electronics);
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+    }
+
+    .radio-option label {
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 7px;
+      background: var(--electronics);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+      background: var(--electronics-dark);
+    }
+
+    .dependency-list {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 9px;
+      padding: 12px;
+      min-height: 100px;
+      margin-top: 12px;
+    }
+
+    .dependency-list>p {
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 14px 0;
+    }
+
+    .dependency-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 9px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      margin-bottom: 5px;
+      border: 1px solid var(--card-border);
+    }
+
+    .dependency-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .dependency-item-name {
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .dependency-item-remove {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 2px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: background 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .dependency-item-remove:hover {
+      background: rgba(239, 68, 68, 0.35);
+    }
+
+    .editor-note {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 12px;
+      padding: 9px 11px;
+      background: rgba(245, 158, 11, 0.08);
+      border-radius: 7px;
+      border-left: 3px solid var(--robotics);
+      line-height: 1.5;
+    }
+
+    @media(max-width:768px) {
+      .sidebar {
+        width: 100%;
+        right: -100%;
+      }
+
+      .row-labels {
+        width: 140px;
+      }
+
+      .tier-cell,
+      .tier-header-cell {
+        width: 155px;
+      }
+
+      .editor-controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Enhanced Recommendation Styles */
+    .recommendation-level {
+      background: linear-gradient(145deg, rgba(30, 27, 51, 0.95), rgba(40, 38, 68, 0.95));
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .recommendation-level[data-level="career"] {
+      border-color: var(--electronics);
+      background: linear-gradient(145deg, rgba(30, 27, 51, 0.95), rgba(59, 130, 246, 0.1));
+    }
+
+    .recommendation-level[data-level="pathway"] {
+      border-color: var(--cad);
+      background: linear-gradient(145deg, rgba(30, 27, 51, 0.95), rgba(139, 92, 246, 0.1));
+    }
+
+    .recommendation-level[data-level="badge"] {
+      border-color: var(--robotics);
+      background: linear-gradient(145deg, rgba(30, 27, 51, 0.95), rgba(245, 158, 11, 0.1));
+    }
+
+    .recommendation-level[data-level="subBadge"] {
+      border-color: var(--ai);
+      background: linear-gradient(145deg, rgba(30, 27, 51, 0.95), rgba(236, 72, 153, 0.1));
+    }
+
+    .rec-description {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    /* Career Recommendations Grid */
+    .career-recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 15px;
+    }
+
+    .career-recommendation-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .career-recommendation-card.top-match {
+      border: 2px solid var(--electronics);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .career-recommendation-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .rec-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .rec-rank {
+      background: var(--electronics);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .rec-icon {
+      font-size: 24px;
+    }
+
+    .rec-title {
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      flex-grow: 1;
+    }
+
+    .rec-match {
+      font-size: 12px;
+      font-weight: 700;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .rec-desc {
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .rec-progress {
+      margin: 12px 0;
+    }
+
+    .rec-progress-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .rec-key-badges {
+      margin: 12px 0;
+    }
+
+    .rec-key-badges strong {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .key-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      margin: 2px;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--electronics);
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .key-badge.has {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+
+    .rec-next {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-size: 11px;
+    }
+
+    .rec-next strong {
+      color: #fcd34d;
+    }
+
+    .rec-action {
+      margin-top: 12px;
+    }
+
+    .btn-focus {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--electronics);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-focus:hover {
+      background: var(--electronics-dark);
+    }
+
+    /* Pathway Recommendations */
+    .pathway-recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+    }
+
+    .pathway-recommendation-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: transform 0.2s;
+    }
+
+    .pathway-recommendation-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--cad);
+    }
+
+    .pathway-recommendation-card.priority-high {
+      border-color: var(--electronics);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .pathway-recommendation-card.priority-medium {
+      border-color: var(--robotics);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .pathway-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pathway-icon {
+      font-size: 24px;
+    }
+
+    .pathway-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #fff;
+      flex-grow: 1;
+    }
+
+    .pathway-score {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--electronics);
+      background: rgba(59, 130, 246, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .pathway-progress {
+      margin: 12px 0;
+    }
+
+    .pathway-progress .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .pathway-progress .progress-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .pathway-advice {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin: 10px 0;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+    }
+
+    .btn-explore {
+      width: 100%;
+      padding: 8px;
+      background: var(--cad);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-explore:hover {
+      background: var(--cad-dark);
+    }
+
+    /* Badge Recommendations */
+    .badge-recommendations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .badge-recommendation-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+
+    .badge-recommendation-item:hover {
+      border-color: var(--robotics);
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    .badge-recommendation-item.type-continue {
+      border-left: 4px solid #10b981;
+    }
+
+    .badge-recommendation-item.type-ready {
+      border-left: 4px solid var(--electronics);
+    }
+
+    .badge-recommendation-item.type-cross-disciplinary {
+      border-left: 4px solid var(--cad);
+    }
+
+    .badge-recommendation-item.type-prereq-ready {
+      border-left: 4px solid var(--ai);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(236, 72, 153, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+      }
+    }
+
+    .badge-rec-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .badge-rec-rank {
+      background: var(--robotics);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .badge-rec-icon {
+      font-size: 20px;
+    }
+
+    .badge-rec-info {
+      flex-grow: 1;
+    }
+
+    .badge-rec-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .badge-rec-context {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .badge-rec-score {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--robotics);
+      background: rgba(245, 158, 11, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .badge-rec-progress {
+      margin: 10px 0;
+    }
+
+    .badge-rec-progress .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .badge-rec-progress .progress-text {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .badge-rec-reason {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin: 8px 0;
+    }
+
+    .badge-rec-reason strong {
+      color: #fbbf24;
+    }
+
+    .badge-rec-action {
+      margin-top: 10px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--electronics);
+      border: 1px solid var(--electronics);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-small:hover {
+      background: var(--electronics);
+      color: white;
+    }
+
+    .btn-earn {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid #10b981;
+    }
+
+    .btn-earn:hover {
+      background: #10b981;
+      color: white;
+    }
+
+    /* Sub-Badge Recommendations */
+    .subbadge-recommendations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .subbadge-recommendation-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+
+    .subbadge-recommendation-item:hover {
+      border-color: var(--ai);
+      background: rgba(236, 72, 153, 0.05);
+    }
+
+    .subbadge-recommendation-item.type-complete-badge {
+      border-left: 4px solid #10b981;
+    }
+
+    .subbadge-recommendation-item.type-start-new {
+      border-left: 4px solid var(--electronics);
+    }
+
+    .subbadge-recommendation-item.type-career-foundation {
+      border-left: 4px solid var(--cad);
+    }
+
+    .subbadge-rec-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .subbadge-rec-rank {
+      background: var(--ai);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .subbadge-rec-icon {
+      font-size: 20px;
+    }
+
+    .subbadge-rec-info {
+      flex-grow: 1;
+    }
+
+    .subbadge-rec-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .subbadge-rec-context {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .subbadge-rec-score {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ai);
+      background: rgba(236, 72, 153, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .subbadge-rec-reason {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin: 8px 0;
+    }
+
+    .subbadge-rec-reason strong {
+      color: #ec4899;
+    }
+
+    .subbadge-rec-action {
+      margin-top: 10px;
+    }
+
+    /* Patterns Container */
+    .patterns-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 15px 0;
+    }
+
+    .pattern-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .pattern-card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .pattern-card p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .pattern-confidence {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .confidence-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: rgba(59, 130, 246, 0.3);
+      transition: width 1s ease;
+    }
+
+    .pattern-confidence span {
+      position: relative;
+      z-index: 1;
+      font-size: 10px;
+      color: var(--text-muted);
+      padding-left: 8px;
+    }
+
+    /* Insights Panel */
+    .insights-panel {
+      background: linear-gradient(145deg, rgba(30, 27, 51, 0.95), rgba(40, 38, 68, 0.95));
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--ai);
+    }
+
+    .insights-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .insights-title {
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .learning-style-badge {
+      background: rgba(236, 72, 153, 0.2);
+      color: var(--ai);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .insight-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .insight-card h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .insight-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .insight-list li {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .insight-list li:last-child {
+      border-bottom: none;
+    }
+
+    .insight-list li strong {
+      color: #fbbf24;
+    }
+  </style>
+  <link rel="stylesheet" href="visualization-styles.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>🌳 STEM Curriculum Navigator</h1>
+      <p class="subtitle">Click any tier to explore badges and sub-badges • Color-coded by field</p>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-box earned"></div><span>Complete</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-box current"></div><span>In Progress</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-box available"></div><span>Available</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-box locked"></div><span>Locked</span>
+      </div>
+    </div>
+
+    <div class="progress-overview">
+      <div class="stat-card">
+        <div class="stat-number" id="statBadges">0</div>
+        <div class="stat-label">Badges Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statSub">0</div>
+        <div class="stat-label">Sub-Badges Earned</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statPct">0%</div>
+        <div class="stat-label">Overall Progress</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statFields">0</div>
+        <div class="stat-label">Fields Explored</div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-wrapper">
+      <div class="row-labels" id="rowLabels"></div>
+      <div class="scroll-area">
+        <div class="scroll-inner" id="scrollInner"></div>
+      </div>
+    </div>
+
+    <!-- Learning Journey -->
+    <div class="section-panel">
+      <h2>📍 Your Learning Journey</h2>
+      <div class="path-timeline" id="pathTimeline">
+        <div class="empty-path">Complete sub-badges above to build your learning path here!</div>
+      </div>
+      <div class="metrics-row" id="metricsRow"></div>
+      <div class="overall-progress">
+        <h3>Overall Progress</h3>
+        <div class="stats-text" id="statsText">0 badges completed out of 0</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Career Paths -->
+    <div class="section-panel insights-panel" id="insightsPanel">
+      <div class="insights-header">
+        <div class="insights-title">🧠 Your Learning Insights</div>
+        <div class="learning-style-badge" id="learningStyle">Analyzing...</div>
+      </div>
+      <div class="insights-grid" id="insightsGrid">
+        <div class="insight-card">
+          <h4>Learning Patterns</h4>
+          <ul class="insight-list" id="patternsList"></ul>
+        </div>
+        <div class="insight-card">
+          <h4>Top Interests</h4>
+          <ul class="insight-list" id="interestsList"></ul>
+        </div>
+        <div class="insight-card">
+          <h4>Emerging Skills</h4>
+          <ul class="insight-list" id="emergingList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Level Recommendations -->
+    <div id="multiLevelRecommendations">
+      <!-- Dynamic content will be inserted here -->
+    </div>
+
+    <!-- Visualization Selector -->
+    <div class="section-panel viz-selector-container">
+      <div class="viz-selector-header">
+        <h3>📊 Learning Visualizations</h3>
+        <div class="viz-selector-subtitle">Choose how to view your learning progress</div>
+      </div>
+      <div class="viz-selector-grid" id="vizOptions">
+        <div class="viz-loading">
+          <div class="viz-loading-spinner"></div>
+          <div class="viz-loading-text">Loading visualizations...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Visualization Display -->
+    <div class="section-panel" id="visualizationContainer">
+      <div id="currentViz">
+        <div class="viz-loading">
+          <div class="viz-loading-spinner"></div>
+          <div class="viz-loading-text">Preparing visualization...</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Dependency Editor -->
+    <div class="section-panel">
+      <h2>🔧 Dependency Editor</h2>
+      <div class="editor-controls">
+        <div class="control-group">
+          <label>Select Badge</label>
+          <select id="edBadgeSelect" onchange="edLoadDeps()">
+            <option value="">-- Choose a badge --</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Add Prerequisite</label>
+          <select id="edPrereqSelect">
+            <option value="">-- Choose prerequisite --</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Enforcement Mode</label>
+          <div class="enforcement-mode">
+            <div class="radio-option">
+              <input type="radio" id="strictMode" name="enforcement" value="strict" checked
+                onchange="edUpdateEnforcement()">
+              <label for="strictMode">Strict</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="flexibleMode" name="enforcement" value="flexible"
+                onchange="edUpdateEnforcement()">
+              <label for="flexibleMode">Flexible</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="edAddPrereq()">Add Prerequisite to Selected Badge</button>
+      <div class="dependency-list" id="edDepList">
+        <p>Select a badge to view and edit its prerequisites</p>
+      </div>
+      <p class="editor-note">
+        <strong>Strict Mode:</strong> Tiers lock until badge requirements are met — the override dialog lets you bypass
+        if needed.&nbsp;&nbsp;
+        <strong>Flexible Mode:</strong> All tiers are always open with no restrictions. Cross-tier badge prerequisites
+        still display but are not enforced.
+      </p>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div class="sidebar-title" id="sidebarTitle"></div>
+        <div class="sidebar-subtitle" id="sidebarSub"></div>
+      </div>
+      <button class="close-btn" onclick="closeSidebar()">×</button>
+    </div>
+    <div class="sidebar-content" id="sidebarContent"></div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip"></div>
+
+  <!-- Override Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-title">Tier Locked</div>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-override" onclick="overrideAndOpen()">Open Anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./curriculum-data.js"></script>
+  <script src="./recommendation-engine.js"></script>
+  <script src="./visualization-engine.js"></script>
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // CURRICULUM DATA - Use external data from curriculum-data.js
+    // ═══════════════════════════════════════════════════════════════════
+    const CURRICULUM_DATA = window.CURRICULUM_DATA;
+
+    // ═══════════════════════════════════════════════════════════════════ 
+    // FIELD CONFIG
+    // ═══════════════════════════════════════════════════════════════════
+    const FIELD_CONFIG = {
+      'CAD Design': { cls: 'cad-design', color: 'var(--cad)', icon: '📐' },
+      'Electronic CAD': { cls: 'electronic-cad', color: 'var(--electronics)', icon: '🔌' },
+      'Web Development': { cls: 'web-development', color: 'var(--web)', icon: '💻' },
+      'App Development': { cls: 'app-development', color: 'var(--appdev)', icon: '📱' },
+      'Hardware Programming': { cls: 'hardware-programming', color: 'var(--hardware)', icon: '⚡' },
+      'Architectural CAD': { cls: 'architectural-cad', color: 'var(--arch)', icon: '🏛️' },
+      'Data Intelligence': { cls: 'data-intelligence', color: 'var(--data)', icon: '📊' },
+      'Practical Electronics': { cls: 'practical-electronics', color: 'var(--practical)', icon: '🔧' },
+      'AI and Data Science': { cls: 'ai-data-science', color: 'var(--ai)', icon: '🧠' },
+      'Game Development': { cls: 'game-development', color: 'var(--game)', icon: '🎮' },
+      'Robotics': { cls: 'robotics', color: 'var(--robotics)', icon: '🤖' }
+    };
+
+    const TIER_NAMES = ['Seed Stage', 'Sprout Stage', 'Branch Stage', 'Fruiting Stage'];
+    const TIER_ICONS = ['🌱', '🌿', '🍃', '🏗️'];
+    // badges needed in previous tier to unlock next: tier1→always open, tier2 needs 2, tier3 needs 3, tier4 needs 4
+    const TIER_UNLOCK = [0, 2, 3, 4];
+
+    const CAREER_PATHS = {};
+
+    // Helper functions needed by recommendation engine
+    function getCurrentTierInField(field) {
+      for (let tier = 3; tier >= 0; tier--) {
+        const completed = getTierCompleted(field, tier);
+        const total = getTierTotalBadges(field, tier);
+        if (completed > 0 || (tier === 0 && hasAnyBadges(field))) {
+          return tier;
+        }
+      }
+      return -1;
+    }
+
+    function highlightCareerBadges(badges) {
+      // Implementation for highlighting badges related to a career
+      console.log('Highlighting career badges:', badges);
+    }
+
+    function highlightFieldInGrid(field) {
+      // Implementation for highlighting a field in the grid
+      console.log('Highlighting field:', field);
+    }
+
+    function openBadgeDetails(field, tier, badgeIdx) {
+      openSidebar(field, tier);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════════
+    // userProgress[field].tiers[tierIdx][badgeIdx] = [subIdx, ...]
+    let userProgress = {};
+    // Ordered log of fully-completed badges for the learning journey timeline
+    let journeyLog = [];
+    // Pending modal state
+    let pendingOpen = null;
+
+    function initProgress() {
+      Object.keys(CURRICULUM_DATA).forEach(f => {
+        if (!userProgress[f]) userProgress[f] = { tiers: [{}, {}, {}, {}] };
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════════════════════
+    function getBadgeProgress(field, tier, badgeIdx) {
+      const badge = CURRICULUM_DATA[field][tier].badges[badgeIdx];
+      const earned = (userProgress[field].tiers[tier][badgeIdx] || []).length;
+      const total = badge.subBadges.length;
+      return { earned, total, pct: total ? Math.round(earned / total * 100) : 0 };
+    }
+
+    function isBadgeComplete(field, tier, badgeIdx) {
+      return getBadgeProgress(field, tier, badgeIdx).pct === 100;
+    }
+
+    function getTierCompleted(field, tier) {
+      return CURRICULUM_DATA[field][tier].badges.filter((_, i) => isBadgeComplete(field, tier, i)).length;
+    }
+
+    function isTierUnlocked(field, tier) {
+      if (tier === 0) return true;
+      return getTierCompleted(field, tier - 1) >= TIER_UNLOCK[tier];
+    }
+
+    function getTierTotalBadges(field, tier) {
+      return CURRICULUM_DATA[field][tier].badges.length;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER GRID
+    // ═══════════════════════════════════════════════════════════════════
+    function renderGrid() {
+      const labels = document.getElementById('rowLabels');
+      const scroll = document.getElementById('scrollInner');
+      labels.innerHTML = ''; scroll.innerHTML = '';
+
+      const fields = Object.keys(CURRICULUM_DATA);
+
+      // Corner
+      const corner = document.createElement('div');
+      corner.className = 'corner-cell'; corner.textContent = 'Field';
+      labels.appendChild(corner);
+
+      // Tier headers
+      const hRow = document.createElement('div');
+      hRow.className = 'tier-header-row';
+      for (let t = 0; t < 4; t++) {
+        const h = document.createElement('div');
+        h.className = 'tier-header-cell';
+        h.innerHTML = `<div class="tier-h-name">${TIER_ICONS[t]} Tier ${t + 1}</div><div class="tier-h-sub">${TIER_NAMES[t]}</div>`;
+        hRow.appendChild(h);
+      }
+      scroll.appendChild(hRow);
+
+      // One row per field
+      fields.forEach(field => {
+        const cfg = FIELD_CONFIG[field];
+
+        // Label
+        const lbl = document.createElement('div');
+        lbl.className = 'row-label-item';
+        lbl.innerHTML = `<div class="row-label-icon">${cfg.icon}</div><div class="row-label-dot" style="background:${cfg.color}"></div><div class="row-label-text">${field}</div>`;
+        labels.appendChild(lbl);
+
+        // Row
+        const row = document.createElement('div');
+        row.className = 'field-row';
+
+        for (let t = 0; t < 4; t++) {
+          const unlocked = isTierUnlockedEnforced(field, t);
+          const completed = getTierCompleted(field, t);
+          const total = getTierTotalBadges(field, t);
+          const hasAny = completed > 0;
+          const allDone = completed === total;
+
+          let status = 'available';
+          if (!unlocked) status = 'locked';
+          else if (allDone) status = 'complete';
+          else if (hasAny) status = 'in-progress';
+
+          const cell = document.createElement('div');
+          cell.className = `tier-cell ${cfg.cls} status-${status}`;
+
+          cell.innerHTML = `
+        <div class="tc-name">${CURRICULUM_DATA[field][t].tierName}</div>
+        <div class="tc-progress">${completed}/${total} badges</div>
+        ${!unlocked ? '<div class="tc-lock">🔒</div>' : ''}
+      `;
+
+          cell.addEventListener('click', () => handleTierClick(field, t));
+
+          // Tooltip on locked
+          if (!unlocked) {
+            cell.addEventListener('mouseenter', e => {
+              showTooltip(e, `Needs ${TIER_UNLOCK[t]} badges in ${TIER_NAMES[t - 1]}`);
+            });
+            cell.addEventListener('mouseleave', hideTooltip);
+          }
+
+          row.appendChild(cell);
+        }
+        scroll.appendChild(row);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // TIER CLICK — open or show modal
+    // ═══════════════════════════════════════════════════════════════════
+    function handleTierClick(field, tier) {
+      if (isTierUnlockedEnforced(field, tier)) {
+        openSidebar(field, tier);
+      } else {
+        pendingOpen = { field, tier };
+        const needed = TIER_UNLOCK[tier];
+        const have = getTierCompleted(field, tier - 1);
+        document.getElementById('modalBody').innerHTML = `
+      <p>This tier requires <strong>${needed} completed badges</strong> in the ${TIER_NAMES[tier - 1]} tier. You currently have <strong>${have}</strong>.</p>
+      <div class="missing-prereqs">
+        <div class="missing-prereqs-title">Requirement</div>
+        <ul class="missing-prereqs-list">
+          <li>• Complete ${needed - have} more badge(s) in <strong>${field} – ${TIER_NAMES[tier - 1]}</strong></li>
+        </ul>
+      </div>
+      <p>You can override and open this tier anyway if needed.</p>
+    `;
+        document.getElementById('modal').classList.add('show');
+      }
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+      pendingOpen = null;
+    }
+    function overrideAndOpen() {
+      if (pendingOpen) openSidebar(pendingOpen.field, pendingOpen.tier);
+      closeModal();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SIDEBAR
+    // ═══════════════════════════════════════════════════════════════════
+    function openSidebar(field, tier) {
+      document.getElementById('sidebarTitle').textContent = `${FIELD_CONFIG[field].icon} ${field}`;
+      document.getElementById('sidebarSub').textContent = CURRICULUM_DATA[field][tier].tierName;
+
+      const content = document.getElementById('sidebarContent');
+      content.innerHTML = '';
+
+      CURRICULUM_DATA[field][tier].badges.forEach((badge, bIdx) => {
+        const prog = getBadgeProgress(field, tier, bIdx);
+        const done = prog.pct === 100;
+
+        const card = document.createElement('div');
+        card.className = `badge-card ${done ? 'earned' : ''}`;
+
+        // Progress ring SVG
+        const R = 14, C = 2 * Math.PI * R;
+        const offset = C - (prog.pct / 100) * C;
+
+        card.innerHTML = `
+      <div class="badge-header">
+        <div>
+          <div class="badge-name">${badge.name}</div>
+          <div class="badge-progress-mini">${prog.earned}/${prog.total} sub-badges</div>
+          ${(function () {
+            const key = badgeKey(field, tier, bIdx);
+            const reqs = badgeDeps[key] || [];
+            if (!reqs.length) return '';
+            const allMet = reqs.every(rk => { const p = parseKey(rk); return isBadgeComplete(p.field, p.tier, p.badge); });
+            return `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">
+              ${reqs.map(rk => {
+              const p = parseKey(rk);
+              const met = isBadgeComplete(p.field, p.tier, p.badge);
+              return `<span style="font-size:9px;padding:1px 6px;border-radius:6px;font-weight:600;
+                  background:${met ? 'rgba(16,185,129,0.18)' : 'rgba(245,158,11,0.15)'};
+                  border:1px solid ${met ? 'rgba(16,185,129,0.4)' : 'rgba(245,158,11,0.35)'};
+                  color:${met ? '#6ee7b7' : '#fcd34d'}">${met ? '✓' : '⚠'} ${badgeName(rk)}</span>`;
+            }).join('')}
+            </div>`;
+          })()}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="badge-ring-wrap">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="${R}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3.5"/>
+              <circle cx="19" cy="19" r="${R}" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"
+                stroke-dasharray="${C}" stroke-dashoffset="${offset}" transform="rotate(-90 19 19)"/>
+            </svg>
+            <div class="ring-text">${prog.pct}%</div>
+          </div>
+          <div class="badge-status">${done ? '✅' : '⭐'}</div>
+        </div>
+      </div>
+      <div class="sub-badges">
+        ${badge.subBadges.map((sub, sIdx) => {
+            const earned = (userProgress[field].tiers[tier][bIdx] || []).includes(sIdx);
+            return `<div class="sub-badge-item ${earned ? 'earned' : ''}" onclick="toggleSub('${field}',${tier},${bIdx},${sIdx})">
+            <div class="sub-badge-checkbox ${earned ? 'checked' : ''}">${earned ? '✓' : ''}</div>
+            <span>${sub}</span>
+          </div>`;
+          }).join('')}
+      </div>
+    `;
+        content.appendChild(card);
+      });
+
+      document.getElementById('sidebar').classList.add('active');
+      document.getElementById('overlay').classList.add('active');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('active');
+      document.getElementById('overlay').classList.remove('active');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // TOGGLE SUB-BADGE
+    // ═══════════════════════════════════════════════════════════════════
+    function toggleSub(field, tier, bIdx, sIdx) {
+      const arr = userProgress[field].tiers[tier];
+      if (!arr[bIdx]) arr[bIdx] = [];
+
+      const i = arr[bIdx].indexOf(sIdx);
+      if (i > -1) {
+        arr[bIdx].splice(i, 1);
+        // If we uncomplete a badge, remove from journey if present
+        if (!isBadgeComplete(field, tier, bIdx)) {
+          journeyLog = journeyLog.filter(j => !(j.field === field && j.tier === tier && j.badge === bIdx));
+        }
+      } else {
+        arr[bIdx].push(sIdx);
+        // If badge just became complete, add to journey
+        if (isBadgeComplete(field, tier, bIdx)) {
+          journeyLog.push({ field, tier, badge: bIdx, name: CURRICULUM_DATA[field][tier].badges[bIdx].name });
+        }
+      }
+
+      // Re-render sidebar in place (keeps it open and updates rings)
+      openSidebar(field, tier);
+      renderGrid();
+      renderJourney();
+      renderMetrics();
+      renderCareerPaths();
+      updateStats();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // LEARNING JOURNEY TIMELINE
+    // ═══════════════════════════════════════════════════════════════════
+    function renderJourney() {
+      const tl = document.getElementById('pathTimeline');
+      if (!journeyLog.length) {
+        tl.innerHTML = '<div class="empty-path">Complete sub-badges above to build your learning path here!</div>';
+        return;
+      }
+      tl.innerHTML = '';
+      journeyLog.forEach((item, i) => {
+        const cfg = FIELD_CONFIG[item.field];
+        const badge = document.createElement('div');
+        badge.className = 'path-badge';
+        badge.style.background = cfg.color;
+        badge.style.borderColor = cfg.color;
+        badge.innerHTML = `
+      <div class="path-badge-number">${i + 1}</div>
+      <div class="path-badge-field">${item.field}</div>
+      <div class="path-badge-name">${item.name}</div>
+    `;
+        tl.appendChild(badge);
+        if (i < journeyLog.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = 'path-arrow'; arrow.textContent = '→';
+          tl.appendChild(arrow);
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PER-FIELD METRICS + DIVERSITY
+    // ═══════════════════════════════════════════════════════════════════
+    function renderMetrics() {
+      const section = document.getElementById('metricsRow');
+      if (!journeyLog.length) { section.innerHTML = ''; return; }
+
+      const counts = {};
+      Object.keys(CURRICULUM_DATA).forEach(f => counts[f] = 0);
+      journeyLog.forEach(j => counts[j.field]++);
+
+      const active = Object.values(counts).filter(c => c > 0).length;
+      const diversity = Math.round(active / Object.keys(CURRICULUM_DATA).length * 100);
+
+      section.innerHTML = '';
+      Object.keys(CURRICULUM_DATA).forEach(f => {
+        if (!counts[f]) return;
+        const cfg = FIELD_CONFIG[f];
+        const card = document.createElement('div');
+        card.className = 'metric-card';
+        card.style.background = cfg.color;
+        card.style.borderColor = cfg.color;
+        card.innerHTML = `<h3>${f}</h3><div class="metric-value">${counts[f]}</div><div class="metric-label">badges done</div>`;
+        section.appendChild(card);
+      });
+
+      const div = document.createElement('div');
+      div.className = 'metric-card diversity-score';
+      div.innerHTML = `<h3>Path Diversity</h3><div class="metric-value">${diversity}%</div><div class="metric-label">${active} of ${Object.keys(CURRICULUM_DATA).length} fields</div>`;
+      section.appendChild(div);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // OVERALL STATS
+    // ═══════════════════════════════════════════════════════════════════
+    function updateStats() {
+      let totalBadges = 0, earnedBadges = 0, totalSub = 0, earnedSub = 0;
+      const fieldsActive = new Set();
+
+      Object.keys(CURRICULUM_DATA).forEach(f => {
+        for (let t = 0; t < 4; t++) {
+          CURRICULUM_DATA[f][t].badges.forEach((b, bIdx) => {
+            totalBadges++;
+            totalSub += b.subBadges.length;
+            const prog = getBadgeProgress(f, t, bIdx);
+            earnedSub += prog.earned;
+            if (prog.pct === 100) { earnedBadges++; fieldsActive.add(f); }
+          });
+        }
+      });
+
+      const pct = totalSub ? Math.round(earnedSub / totalSub * 100) : 0;
+      document.getElementById('statBadges').textContent = earnedBadges;
+      document.getElementById('statSub').textContent = earnedSub;
+      document.getElementById('statPct').textContent = pct + '%';
+      document.getElementById('statFields').textContent = fieldsActive.size;
+      document.getElementById('statsText').textContent = `${earnedBadges} badges completed out of ${totalBadges} • ${earnedSub}/${totalSub} sub-badges`;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressFill').textContent = pct + '%';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // CAREER PATHS — WEIGHTED SCORING ALGORITHM
+    // ═══════════════════════════════════════════════════════════════════
+    const TIER_WEIGHT = [1, 2, 3, 4];
+
+    function scoreCareerPath(cp) {
+      let score = 0, maxScore = 0, nextBadge = null;
+
+      // Sort badges by tier then badge index for "next" logic
+      const sorted = [...cp.badges].sort((a, b) => a.tier - b.tier || a.badge - b.badge);
+
+      cp.badges.forEach(ref => {
+        const w = TIER_WEIGHT[ref.tier];
+        const prog = getBadgeProgress(ref.field, ref.tier, ref.badge);
+        const frac = prog.total ? prog.earned / prog.total : 0;
+        score += frac * w;
+        maxScore += w;
+      });
+
+      // Find next recommended badge
+      for (const ref of sorted) {
+        if (!isBadgeComplete(ref.field, ref.tier, ref.badge)) {
+          nextBadge = {
+            field: ref.field,
+            tier: ref.tier,
+            name: CURRICULUM_DATA[ref.field][ref.tier].badges[ref.badge].name
+          };
+          break;
+        }
+      }
+
+      const pct = maxScore ? Math.round(score / maxScore * 100) : 0;
+      return { pct, nextBadge, done: pct === 100 };
+    }
+
+    function renderCareerPaths() {
+      const grid = document.getElementById('careerGrid');
+      if (!grid) return; // ADD THIS CHECK
+      grid.innerHTML = '<div class="empty-path">Career suggestions now in Multi-Level Recommendations above!</div>';
+    }
+    // ═══════════════════════════════════════════════════════════════════
+    // TOOLTIP
+    // ═══════════════════════════════════════════════════════════════════
+    function showTooltip(e, text) {
+      const t = document.getElementById('tooltip');
+      t.textContent = text; t.style.display = 'block';
+      t.style.left = e.clientX + 14 + 'px'; t.style.top = e.clientY + 14 + 'px';
+    }
+    function hideTooltip() { document.getElementById('tooltip').style.display = 'none'; }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // DEPENDENCY EDITOR
+    // ═══════════════════════════════════════════════════════════════════
+    let enforcementMode = 'strict';
+
+    // Default badge-level prerequisites (cross-tier links)
+    // Format:  "targetField|targetTier|targetBadge" : ["reqField|reqTier|reqBadge", ...]
+    const DEFAULT_BADGE_DEPS = {
+      // Electronic CAD
+      "Electronic CAD|1|0": ["Electronic CAD|0|0"],               // Schematic Designer ← Circuit Builder
+      "Electronic CAD|1|2": ["Electronic CAD|0|0", "Electronic CAD|0|1"], // Circuit Simulator ← Circuit Builder + Component Identifier
+      "Electronic CAD|2|0": ["Electronic CAD|1|2"],               // Digital Designer ← Circuit Simulator
+      "Electronic CAD|2|5": ["Electronic CAD|1|2", "Electronic CAD|1|1"], // Library Maintainer ← Circuit Simulator + PCB Designer
+      "Electronic CAD|3|0": ["Electronic CAD|2|0", "Electronic CAD|2|5"], // Product Architect ← Digital Designer + Library Maintainer
+
+      // CAD Design
+      "CAD Design|1|0": ["CAD Design|0|0", "CAD Design|0|1"],     // Parametric Modeler ← Sketch Master + Shape Builder
+      "CAD Design|2|0": ["CAD Design|1|0", "CAD Design|1|1"],     // Manufacturing Designer ← Parametric Modeler + Assembly Designer
+      "CAD Design|3|0": ["CAD Design|2|0"],                       // Systems Architect ← Manufacturing Designer
+
+      // Robotics
+      "Robotics|1|0": ["Robotics|0|0", "Robotics|0|3"],          // Build Autonomous Robots ← Make Robots Move + Program Basic Behaviors
+      "Robotics|1|1": ["Electronic CAD|0|0"],                     // Control with Microcontrollers ← Circuit Builder
+      "Robotics|2|0": ["Robotics|1|0", "Robotics|1|3"],          // Navigate Autonomously ← Build Autonomous Robots + Integrate Multiple Sensors
+      "Robotics|2|1": ["Robotics|1|3"],                           // Implement Computer Vision ← Integrate Multiple Sensors
+      "Robotics|3|0": ["Robotics|2|0", "Robotics|2|3"],          // Architect Complete Robotic Systems ← Navigate Autonomously + Design Advanced Control
+
+      // Practical Electronics
+      "Practical Electronics|1|0": ["Practical Electronics|0|0"], // Analog Designer ← Circuit Builder
+      "Practical Electronics|2|0": ["Practical Electronics|1|2"], // PCB Designer ← Microcontroller Programmer
+      "Practical Electronics|3|0": ["Practical Electronics|2|0", "Practical Electronics|2|6"], // Systems Architect ← PCB Designer + Firmware Developer
+
+      // AI and Data Science
+      "AI and Data Science|1|4": ["AI and Data Science|0|2"],    // Model Evaluator ← Pattern Finder
+      "AI and Data Science|2|0": ["AI and Data Science|1|4"],    // Computer Vision ← Model Evaluator
+      "AI and Data Science|2|2": ["AI and Data Science|2|0"],    // Time Series ← Computer Vision
+      "AI and Data Science|3|0": ["AI and Data Science|2|2"],    // AI Researcher ← Time Series
+
+      // Web Development
+      "Web Development|1|1": ["Web Development|0|2"],            // Interactive Developer ← Content Publisher
+      "Web Development|2|0": ["Web Development|1|1", "Web Development|1|3"], // Frontend Framework ← Interactive Developer + API Integrator
+      "Web Development|3|0": ["Web Development|2|0", "Web Development|2|1"], // Fullstack Architect ← Frontend Framework + Backend Developer
+
+      // Game Development
+      "Game Development|1|2": ["Game Development|0|0", "Game Development|0|2"], // Program Game Logic ← Make Games Move + Build Game Rules
+      "Game Development|2|0": ["Game Development|1|2", "Game Development|1|3"], // Develop Complex Mechanics ← Program Game Logic + Design Physics Systems
+      "Game Development|3|0": ["Game Development|2|0", "Game Development|2|2"]  // Architect Complete Games ← Develop Complex Mechanics + Build AI Behavior
+    };
+
+    let badgeDeps = JSON.parse(JSON.stringify(DEFAULT_BADGE_DEPS));
+
+    // ── Key helper ──
+    function badgeKey(field, tier, badge) { return `${field}|${tier}|${badge}`; }
+    function parseKey(key) {
+      const parts = key.split('|');
+      return { field: parts[0], tier: Number(parts[1]), badge: Number(parts[2]) };
+    }
+    function badgeName(key) {
+      const { field, tier, badge } = parseKey(key);
+      return CURRICULUM_DATA[field][tier].badges[badge].name;
+    }
+    function badgeLabel(key) {
+      const { field, tier, badge } = parseKey(key);
+      return `${CURRICULUM_DATA[field][tier].badges[badge].name} (${field} T${tier + 1})`;
+    }
+
+    // ── Check badge-level prereqs (used by grid tooltip) ──
+    function areBadgeDepsMetFor(key) {
+      const reqs = badgeDeps[key] || [];
+      return reqs.every(rk => {
+        const { field, tier, badge } = parseKey(rk);
+        return isBadgeComplete(field, tier, badge);
+      });
+    }
+
+    // ── Enforcement-aware tier unlock ──
+    function isTierUnlockedEnforced(field, tier) {
+      if (enforcementMode === 'flexible') return true;
+      return isTierUnlocked(field, tier);
+    }
+
+    // ── Populate both dropdowns with every badge in the curriculum ──
+    function edPopulateDropdowns() {
+      const bs = document.getElementById('edBadgeSelect');
+      const ps = document.getElementById('edPrereqSelect');
+      bs.innerHTML = '<option value="">-- Choose a badge --</option>';
+      ps.innerHTML = '<option value="">-- Choose prerequisite --</option>';
+
+      Object.keys(CURRICULUM_DATA).forEach(field => {
+        // Optgroup per field
+        const bGrp = document.createElement('optgroup');
+        bGrp.label = field;
+        const pGrp = document.createElement('optgroup');
+        pGrp.label = field;
+
+        CURRICULUM_DATA[field].forEach((tier, tIdx) => {
+          tier.badges.forEach((badge, bIdx) => {
+            const key = badgeKey(field, tIdx, bIdx);
+            const txt = `[T${tIdx + 1}] ${badge.name}`;
+            const bOpt = document.createElement('option');
+            bOpt.value = key; bOpt.textContent = txt;
+            bGrp.appendChild(bOpt);
+            const pOpt = document.createElement('option');
+            pOpt.value = key; pOpt.textContent = txt;
+            pGrp.appendChild(pOpt);
+          });
+        });
+        bs.appendChild(bGrp);
+        ps.appendChild(pGrp);
+      });
+    }
+
+    // ── Load current prereqs for the selected badge ──
+    function edLoadDeps() {
+      const key = document.getElementById('edBadgeSelect').value;
+      const list = document.getElementById('edDepList');
+      if (!key) { list.innerHTML = '<p>Select a badge to view and edit its prerequisites</p>'; return; }
+
+      const prereqs = badgeDeps[key] || [];
+      if (!prereqs.length) { list.innerHTML = '<p>No prerequisites set for this badge</p>'; return; }
+
+      list.innerHTML = '';
+      prereqs.forEach(pk => {
+        const item = document.createElement('div');
+        item.className = 'dependency-item';
+        item.innerHTML = `
+      <span class="dependency-item-name">${badgeLabel(pk)}</span>
+      <button class="dependency-item-remove" onclick="edRemovePrereq('${key}','${pk}')">Remove</button>
+    `;
+        list.appendChild(item);
+      });
+    }
+
+    // ── Add a prerequisite ──
+    function edAddPrereq() {
+      const badgeId = document.getElementById('edBadgeSelect').value;
+      const prereqId = document.getElementById('edPrereqSelect').value;
+
+      if (!badgeId) { alert('Please select a badge first'); return; }
+      if (!prereqId) { alert('Please select a prerequisite to add'); return; }
+      if (badgeId === prereqId) { alert('A badge cannot be its own prerequisite'); return; }
+
+      // Simple cycle guard
+      function wouldCycle(target, candidate) {
+        const reqs = badgeDeps[candidate] || [];
+        return reqs.some(r => r === target || wouldCycle(target, r));
+      }
+      if (wouldCycle(prereqId, badgeId)) { alert('This would create a circular dependency'); return; }
+
+      if (!badgeDeps[badgeId]) badgeDeps[badgeId] = [];
+      if (badgeDeps[badgeId].includes(prereqId)) { alert('This prerequisite is already added'); return; }
+
+      badgeDeps[badgeId].push(prereqId);
+      edLoadDeps();
+      renderGrid();
+    }
+
+    // ── Remove a prerequisite ──
+    function edRemovePrereq(badgeId, prereqId) {
+      if (badgeDeps[badgeId]) {
+        badgeDeps[badgeId] = badgeDeps[badgeId].filter(id => id !== prereqId);
+        if (!badgeDeps[badgeId].length) delete badgeDeps[badgeId];
+      }
+      edLoadDeps();
+      renderGrid();
+    }
+
+    // ── Toggle enforcement mode ──
+    function edUpdateEnforcement() {
+      enforcementMode = document.querySelector('input[name="enforcement"]:checked').value;
+      renderGrid();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INTEGRATE RECOMMENDATION ENGINE
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderAllRecommendations() {
+      if (!window.recommendationEngine) {
+        console.log('Recommendation engine not loaded');
+        return;
+      }
+
+      // Get insights
+      const insights = window.recommendationEngine.getPersonalizedInsights();
+
+      // Update insights panel
+      document.getElementById('learningStyle').textContent = insights.learningStyle;
+
+      // Update patterns
+      const patternsList = document.getElementById('patternsList');
+      patternsList.innerHTML = insights.patterns.map(p =>
+        `<li><strong>${p.type}:</strong> ${p.recommendation}</li>`
+      ).join('');
+
+      // Update interests
+      const interestsList = document.getElementById('interestsList');
+      interestsList.innerHTML = insights.topFields.map(f =>
+        `<li><strong>${f.field}:</strong> ${f.score}% match</li>`
+      ).join('');
+
+      // Update emerging skills
+      const emergingList = document.getElementById('emergingList');
+      emergingList.innerHTML = insights.emergingInterests.map(f =>
+        `<li><strong>${f.field}:</strong> Emerging interest (${f.score}%)</li>`
+      ).join('');
+
+      // Get all recommendations
+      const allRecs = window.recommendationEngine.getAllRecommendations();
+      const container = document.getElementById('multiLevelRecommendations');
+      container.innerHTML = '';
+
+      // Render each level
+      Object.values(allRecs).forEach(recData => {
+        const section = createRecommendationSection(recData);
+        container.appendChild(section);
+      });
+    }
+
+    function createRecommendationSection(recData) {
+      const section = document.createElement('div');
+      section.className = 'section-panel recommendation-level';
+      section.setAttribute('data-level', recData.level);
+
+      let content = `
+    <h2>${recData.title}</h2>
+    <p class="rec-description">${recData.description}</p>
+  `;
+
+      // Add patterns for career level
+      if (recData.level === 'career' && recData.patterns) {
+        content += `
+      <div class="patterns-container">
+        ${recData.patterns.map(pattern => `
+          <div class="pattern-card">
+            <h3>${pattern.type}</h3>
+            <p>${pattern.description}</p>
+            <div class="pattern-confidence">
+              <div class="confidence-bar" style="width:${pattern.confidence * 100}%"></div>
+              <span>${Math.round(pattern.confidence * 100)}% confidence</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+      }
+
+      // Add content based on level
+      switch (recData.level) {
+        case 'career':
+          content += renderCareerRecommendations(recData);
+          break;
+        case 'pathway':
+          content += renderPathwayRecommendations(recData);
+          break;
+        case 'badge':
+          content += renderBadgeRecommendations(recData);
+          break;
+        case 'subBadge':
+          content += renderSubBadgeRecommendations(recData);
+          break;
+      }
+
+      section.innerHTML = content;
+      return section;
+    }
+
+    // Render functions (similar to what's in the engine file)
+    function renderCareerRecommendations(recData) {
+      return `
+    <div class="career-recommendations-grid">
+      ${recData.recommendations.map((career, index) => {
+        const pathScore = scoreCareerPath(CAREER_PATHS[career.name] || { badges: [] });
+        return `
+          <div class="career-recommendation-card ${index === 0 ? 'top-match' : ''}">
+            <div class="rec-header">
+              <div class="rec-rank">${index + 1}</div>
+              <div class="rec-icon">${career.profile.icon}</div>
+              <div class="rec-title">${career.name}</div>
+              <div class="rec-match">${Math.round(career.score)}% match</div>
+            </div>
+            <div class="rec-desc">${career.profile.description}</div>
+            
+            <div class="rec-progress">
+              <div class="rec-progress-label">Path Progress: ${pathScore.pct}%</div>
+              <div class="cp-progress-bar"><div class="cp-progress-fill" style="width:${pathScore.pct}%">${pathScore.pct}%</div></div>
+            </div>
+            
+            <div class="rec-key-badges">
+              <strong>Key strengths:</strong>
+              ${Object.keys(career.profile.weights)
+            .filter(field => career.profile.weights[field] > 0.5)
+            .map(field => `<span class="key-badge has">${field}: ${Math.round(career.profile.weights[field] * 100)}%</span>`)
+            .join('')}
+            </div>
+            
+            ${pathScore.nextBadge ? `
+              <div class="rec-next">
+                <strong>Next step:</strong> ${pathScore.nextBadge.name}
+                <span>(${pathScore.nextBadge.field} – Tier ${pathScore.nextBadge.tier + 1})</span>
+              </div>
+            ` : ''}
+            
+            <div class="rec-action">
+              <button class="btn-focus" onclick="focusOnCareer('${career.name}')">
+                Focus on this Career
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    function renderPathwayRecommendations(recData) {
+      return `
+    <div class="pathway-recommendations-grid">
+      ${recData.recommendations.map((pathway, index) => {
+        const cfg = FIELD_CONFIG[pathway.name] || { icon: '📚', color: '#666' };
+        return `
+          <div class="pathway-recommendation-card priority-${pathway.priority}">
+            <div class="pathway-header">
+              <div class="pathway-icon">${pathway.icon}</div>
+              <div class="pathway-name">${pathway.name}</div>
+              <div class="pathway-score">${Math.round(pathway.score)}%</div>
+            </div>
+            
+            <div class="pathway-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${pathway.completion}%; background:${cfg.color}"></div>
+              </div>
+              <div class="progress-text">${Math.round(pathway.completion)}% complete • Depth: ${Math.round(pathway.depth * 100)}%</div>
+            </div>
+            
+            <div class="pathway-advice">${pathway.advice}</div>
+            
+            <div class="pathway-action">
+              <button class="btn-explore" onclick="focusOnPathway('${pathway.name}')">
+                ${pathway.completion === 0 ? 'Explore' : 'Continue'} Pathway
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    function renderBadgeRecommendations(recData) {
+      return `
+    <div class="badge-recommendations-list">
+      ${recData.recommendations.map((rec, index) => {
+        const cfg = FIELD_CONFIG[rec.field] || { icon: '🎯', color: '#666' };
+        const tierName = CURRICULUM_DATA[rec.field][rec.tier].tierName || `Tier ${rec.tier + 1}`;
+
+        return `
+          <div class="badge-recommendation-item type-${rec.type}">
+            <div class="badge-rec-header">
+              <div class="badge-rec-rank">${index + 1}</div>
+              <div class="badge-rec-icon" style="color:${cfg.color}">${cfg.icon}</div>
+              <div class="badge-rec-info">
+                <div class="badge-rec-title">${rec.badge.name}</div>
+                <div class="badge-rec-context">${rec.field} • ${tierName}</div>
+              </div>
+              <div class="badge-rec-score">${Math.round(rec.score)}%</div>
+            </div>
+            
+            <div class="badge-rec-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${rec.progress.pct}%; background:${cfg.color}"></div>
+              </div>
+              <div class="progress-text">${rec.progress.earned}/${rec.progress.total} sub-badges • ${rec.prereqsMet ? '✅ Ready' : '⚠ Needs prerequisites'}</div>
+            </div>
+            
+            <div class="badge-rec-reason">
+              <strong>${rec.type.toUpperCase().replace('-', ' ')}:</strong> ${rec.reason}
+            </div>
+            
+            <div class="badge-rec-action">
+              <button class="btn-small" onclick="openBadgeDetails('${rec.field}', ${rec.tier}, ${rec.badgeIdx})">
+                Work on this Badge
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    function renderSubBadgeRecommendations(recData) {
+      return `
+    <div class="subbadge-recommendations-list">
+      ${recData.recommendations.map((rec, index) => {
+        const cfg = FIELD_CONFIG[rec.field] || { icon: '🎯', color: '#666' };
+
+        return `
+          <div class="subbadge-recommendation-item type-${rec.type}">
+            <div class="subbadge-rec-header">
+              <div class="subbadge-rec-rank">${index + 1}</div>
+              <div class="subbadge-rec-icon" style="color:${cfg.color}">${cfg.icon}</div>
+              <div class="subbadge-rec-info">
+                <div class="subbadge-rec-title">${rec.subBadge}</div>
+                <div class="subbadge-rec-context">
+                  ${rec.badgeContext || `${rec.badge.name} • ${rec.field}`}
+                  ${rec.career ? ` → ${rec.career}` : ''}
+                </div>
+              </div>
+              <div class="subbadge-rec-score">${Math.round(rec.score)}%</div>
+            </div>
+            
+            <div class="subbadge-rec-reason">
+              <strong>${rec.type.toUpperCase().replace('-', ' ')}:</strong> ${rec.reason}
+            </div>
+            
+            <div class="subbadge-rec-action">
+              <button class="btn-small btn-earn" onclick="toggleSub('${rec.field}', ${rec.tier}, ${rec.badgeIdx}, ${rec.subIdx})">
+                Earn this Sub-Badge
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    // Action functions
+    function focusOnCareer(careerName) {
+      if (window.recommendationEngine) {
+        const focusRecs = window.recommendationEngine.setFocus('career', careerName);
+        if (focusRecs) {
+          alert(`Focusing on ${careerName}\n\nKey skills: ${focusRecs.keySkills.join(', ')}`);
+          highlightCareerBadges(CAREER_PATHS[careerName]?.badges || []);
+        }
+      }
+    }
+
+    function focusOnPathway(pathwayName) {
+      if (window.recommendationEngine) {
+        const focusRecs = window.recommendationEngine.setFocus('pathway', pathwayName);
+        if (focusRecs) {
+          openSidebar(pathwayName, focusRecs.currentTier);
+          highlightFieldInGrid(pathwayName);
+        }
+      }
+    }
+
+    // Initialize engine
+    function initializeEngine() {
+      if (!window.recommendationEngine) {
+        window.recommendationEngine = new IntelligentRecommendationEngine();
+      }
+
+      // Add career profiles to CAREER_PATHS (only if not already added)
+      Object.keys(CAREER_INTEREST_PROFILES || {}).forEach(careerName => {
+        if (!CAREER_PATHS[careerName] && CAREER_INTEREST_PROFILES[careerName].badges) {
+          CAREER_PATHS[careerName] = {
+            icon: CAREER_INTEREST_PROFILES[careerName].icon || '🎯',
+            description: CAREER_INTEREST_PROFILES[careerName].description || '',
+            badges: CAREER_INTEREST_PROFILES[careerName].badges || []
+          };
+        }
+      });
+
+      // Initial render
+      setTimeout(() => {
+        renderAllRecommendations();
+      }, 500);
+    }
+
+    // Update existing functions to refresh recommendations
+    function toggleSub(field, tier, bIdx, sIdx) {
+      const arr = userProgress[field].tiers[tier];
+      if (!arr[bIdx]) arr[bIdx] = [];
+
+      const i = arr[bIdx].indexOf(sIdx);
+      if (i > -1) {
+        arr[bIdx].splice(i, 1);
+        if (!isBadgeComplete(field, tier, bIdx)) {
+          journeyLog = journeyLog.filter(j => !(j.field === field && j.tier === tier && j.badge === bIdx));
+        }
+      } else {
+        arr[bIdx].push(sIdx);
+        if (isBadgeComplete(field, tier, bIdx)) {
+          journeyLog.push({ field, tier, badge: bIdx, name: CURRICULUM_DATA[field][tier].badges[bIdx].name });
+        }
+      }
+
+      openSidebar(field, tier);
+      renderGrid();
+      renderJourney();
+      renderMetrics();
+      updateStats();
+
+      // Refresh recommendations
+      renderAllRecommendations();
+    }
+
+    // Update init function to include engine
+    function initAll() {
+      initProgress();
+      edPopulateDropdowns();
+      renderGrid();
+      renderJourney();
+      renderMetrics();
+      renderCareerPaths();
+      updateStats();
+      initializeEngine(); // Add this line
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // VISUALIZATION SYSTEM - SIMPLIFIED
+    // ═══════════════════════════════════════════════════════════════════
+
+    let vizEngine = null;
+
+    function initializeVisualizations() {
+      try {
+        vizEngine = new VisualizationEngine();
+        vizEngine.setData(userProgress, CURRICULUM_DATA, journeyLog);
+        changeVisualization('dashboard'); // New default
+
+        renderVizSelector();
+        renderCurrentVisualization();
+      } catch (error) {
+        console.error('Failed to initialize visualizations:', error);
+        showVizError('Failed to load visualizations');
+      }
+    }
+
+    function renderVizSelector() {
+      const container = document.getElementById('vizOptions');
+      if (!container || !vizEngine) {
+        showVizError('Visualization engine not ready');
+        return;
+      }
+
+      const vizOptions = vizEngine.getAvailableVisualizations();
+
+      container.innerHTML = vizOptions.map(viz => `
+    <div class="viz-option ${viz.id === vizEngine.currentVisualization ? 'active' : ''}"
+         onclick="changeVisualization('${viz.id}')">
+      <div class="viz-icon">${viz.icon}</div>
+      <div class="viz-name">${viz.name}</div>
+      <div class="viz-desc">${viz.description}</div>
+    </div>
+  `).join('');
+    }
+
+    function renderCurrentVisualization() {
+      const container = document.getElementById('currentViz');
+      if (!container || !vizEngine) {
+        showVizError('Visualization engine not ready');
+        return;
+      }
+
+      try {
+        container.innerHTML = vizEngine.render();
+      } catch (error) {
+        console.error('Failed to render visualization:', error);
+        showVizError('Failed to render visualization');
+      }
+    }
+
+    function changeVisualization(vizType) {
+      if (!vizEngine || !vizEngine.setVisualization(vizType)) {
+        return;
+      }
+
+      // Update active class
+      document.querySelectorAll('.viz-option').forEach(option => {
+        option.classList.remove('active');
+      });
+
+      const selectedOption = document.querySelector(`.viz-option[onclick*="${vizType}"]`);
+      if (selectedOption) {
+        selectedOption.classList.add('active');
+      }
+
+      renderCurrentVisualization();
+    }
+
+    function showVizError(message) {
+      const container = document.getElementById('currentViz');
+      if (container) {
+        container.innerHTML = `
+      <div class="viz-error">
+        <div class="viz-error-icon">⚠️</div>
+        <div class="viz-error-text">${message}</div>
+        <button onclick="initializeVisualizations()" style="
+          margin-top: 12px;
+          padding: 6px 12px;
+          background: #3b82f6;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 11px;
+          cursor: pointer;
+        ">Retry</button>
+      </div>
+    `;
+      }
+    }
+
+    // Update toggleSub to refresh visualizations
+    const originalToggleSub = window.toggleSub;
+    window.toggleSub = function (field, tier, bIdx, sIdx) {
+      originalToggleSub(field, tier, bIdx, sIdx);
+
+      // Refresh visualization
+      if (vizEngine) {
+        vizEngine.setData(userProgress, CURRICULUM_DATA, journeyLog);
+        setTimeout(() => renderCurrentVisualization(), 100);
+      }
+    };
+
+    // Initialize after everything else is loaded
+    setTimeout(() => {
+      if (window.CURRICULUM_DATA && window.userProgress) {
+        initializeVisualizations();
+      }
+    }, 500);
+
+    // Initialize visualizations AFTER everything else
+    function initAll() {
+      initProgress();
+      edPopulateDropdowns();
+      renderGrid();
+      renderJourney();
+      renderMetrics();
+      updateStats();
+      initializeEngine();
+      initializeVisualizations(); // Add this LAST
+    }
+
+    // Load everything when ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAll);
+    } else {
+      initAll();
+    }
+
+
+  </script>
+</body>
+
+</html>
